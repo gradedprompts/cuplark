@@ -1,0 +1,2783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Cuplark</title>
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #111a33;
+    color: #fff6e0;
+    font-family: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", Quicksand, Nunito, "Segoe UI", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  #c {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+  }
+  #hud {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 44px;
+    background: rgba(12, 18, 36, 0.86);
+    color: #fff6e0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px 0 14px;
+    font-size: 15px;
+    font-weight: 700;
+    z-index: 10;
+    border-bottom: 1px solid rgba(255, 246, 224, 0.1);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  #hud.hide {
+    display: none;
+  }
+  .hud-left, .hud-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    white-space: nowrap;
+  }
+  #hudHole {
+    color: #fff6e0;
+  }
+  #hudName {
+    color: #c8d5f2;
+    font-weight: 600;
+  }
+  #hudPar {
+    color: #7ee0a3;
+  }
+  #hudStrokes {
+    color: #fff6e0;
+  }
+  #hudTotal {
+    color: #ffd98a;
+  }
+  @media (max-width: 599px) {
+    #hudName {
+      display: none;
+    }
+    .hud-left, .hud-right {
+      gap: 10px;
+    }
+    #hud {
+      font-size: 14px;
+      padding-left: 10px;
+    }
+  }
+  #pauseBtn {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    border: none;
+    background: transparent;
+    color: #fff6e0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 10px;
+  }
+  #pauseBtn:hover {
+    background: rgba(255, 246, 224, 0.12);
+  }
+  #pauseBtn::before, #pauseBtn::after {
+    content: "";
+    display: block;
+    width: 4px;
+    height: 16px;
+    background: #fff6e0;
+    border-radius: 2px;
+  }
+  #callout {
+    position: fixed;
+    top: 52px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(12, 18, 36, 0.9);
+    color: #fff6e0;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 12;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 246, 224, 0.14);
+    display: none;
+  }
+  #callout.on {
+    display: block;
+  }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 15, 30, 0.74);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    z-index: 20;
+  }
+  .overlay.on {
+    display: flex;
+  }
+  .card {
+    background: #fff6e0;
+    color: #1b2440;
+    border-radius: 20px;
+    padding: 16px 20px;
+    width: min(420px, calc(100vw - 16px));
+    max-height: calc(100vh - 16px);
+    box-shadow: 0 16px 42px rgba(5, 9, 20, 0.58), 0 0 0 1px rgba(27, 36, 64, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+  }
+  #roundCard .card {
+    width: min(456px, calc(100vw - 16px));
+  }
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #566382;
+  }
+  .brand {
+    font-size: 38px;
+    line-height: 1.02;
+    font-weight: 900;
+    color: #ff6b5e;
+    letter-spacing: -0.02em;
+  }
+  .card-title {
+    font-size: 27px;
+    line-height: 1.1;
+    font-weight: 900;
+    color: #1b2440;
+  }
+  .subline {
+    font-size: 13.5px;
+    line-height: 1.28;
+    color: #3a4563;
+    font-weight: 600;
+  }
+  .meta-line {
+    font-size: 14px;
+    line-height: 1.25;
+    font-weight: 700;
+    color: #283250;
+  }
+  .note-line {
+    font-size: 13px;
+    line-height: 1.25;
+    font-weight: 600;
+    color: #566382;
+  }
+  .btn {
+    min-height: 44px;
+    height: 44px;
+    padding: 0 16px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.06s ease, filter 0.1s ease, background 0.1s ease;
+    width: 100%;
+  }
+  .btn:active, .hole-btn:active {
+    transform: translateY(1px);
+  }
+  .btn-main {
+    background: #ff6b5e;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 3px 0 #d94f44;
+  }
+  .btn-main:hover {
+    filter: brightness(1.04);
+  }
+  .btn-outline {
+    background: transparent;
+    color: #1b2440;
+    border: 2px solid #1b2440;
+  }
+  .btn-outline:hover {
+    background: rgba(27, 36, 64, 0.07);
+  }
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+  .btn-row .btn {
+    flex: 1;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #566382;
+    margin-top: 2px;
+  }
+  .hole-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 100%;
+  }
+  .hole-btn {
+    min-height: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(27, 36, 64, 0.03);
+    color: #1b2440;
+    border: 2px solid #1b2440;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.05;
+    padding: 2px 4px;
+    transition: transform 0.06s ease, background 0.1s ease;
+  }
+  .hole-btn:hover {
+    background: rgba(27, 36, 64, 0.09);
+  }
+  .hole-btn .hnum {
+    font-size: 14px;
+    font-weight: 800;
+  }
+  .hole-btn small {
+    font-size: 10px;
+    font-weight: 700;
+    color: #566382;
+  }
+  #controls {
+    list-style: none;
+    font-size: 12px;
+    line-height: 1.32;
+    color: #3a4563;
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+  }
+  .sound-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1b2440;
+    cursor: pointer;
+    margin-top: 1px;
+  }
+  .sound-toggle input {
+    width: 16px;
+    height: 16px;
+    accent-color: #ff6b5e;
+    cursor: pointer;
+  }
+  .title-col-left, .title-col-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 6px;
+  }
+  #scoreTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    font-weight: 700;
+    margin: 2px 0;
+  }
+  #scoreTable th, #scoreTable td {
+    border: 1px solid rgba(27, 36, 64, 0.22);
+    padding: 4px 2px;
+    text-align: center;
+  }
+  #scoreTable tr:first-child th, #scoreTable tr:first-child td {
+    background: rgba(27, 36, 64, 0.09);
+    font-weight: 800;
+  }
+  #scoreTable th:first-child, #scoreTable td:first-child {
+    text-align: left;
+    padding-left: 5px;
+    padding-right: 4px;
+    font-weight: 800;
+    background: rgba(27, 36, 64, 0.05);
+  }
+  @media (max-height: 519px) {
+    .card {
+      padding: 10px 14px;
+      gap: 5px;
+      border-radius: 16px;
+    }
+    #title .card {
+      width: min(548px, calc(100vw - 16px));
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .title-col-left {
+      flex: 0.95;
+      gap: 4px;
+    }
+    .title-col-right {
+      flex: 1.05;
+      gap: 4px;
+    }
+    .brand {
+      font-size: 28px;
+    }
+    .card-title {
+      font-size: 21px;
+    }
+    .eyebrow {
+      font-size: 11px;
+    }
+    .subline, .meta-line {
+      font-size: 12px;
+    }
+    .note-line {
+      font-size: 11.5px;
+    }
+    .hole-grid {
+      gap: 4px;
+    }
+    #controls {
+      font-size: 10.5px;
+      line-height: 1.18;
+      gap: 1px;
+    }
+    #scoreTable {
+      font-size: 11.5px;
+    }
+    #scoreTable th, #scoreTable td {
+      padding: 2px 1px;
+    }
+  }
+  @media (max-height: 379px) {
+    #controls {
+      display: none;
+    }
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud" class="hide">
+  <div class="hud-left">
+    <span id="hudHole">Hole 1/9</span>
+    <span id="hudName">First Putt</span>
+    <span id="hudPar">Par 2</span>
+  </div>
+  <div class="hud-right">
+    <span id="hudStrokes">Strokes 0</span>
+    <span id="hudTotal">Total E</span>
+    <button id="pauseBtn" type="button" aria-label="Pause"></button>
+  </div>
+</div>
+
+<div id="callout"></div>
+
+<div id="title" class="overlay on">
+  <div class="card">
+    <div class="title-col-left">
+      <div class="eyebrow">MINI GOLF</div>
+      <h1 class="brand">Cuplark</h1>
+      <p class="subline">Nine holes on a pocket course. Fewest strokes wins.</p>
+      <button id="playBtn" class="btn btn-main" type="button">Play</button>
+      <div id="bestLine" class="note-line">No round finished yet</div>
+      <label class="sound-toggle"><input id="soundBox1" type="checkbox" checked> Sound</label>
+    </div>
+    <div class="title-col-right">
+      <div class="section-label">PRACTISE A HOLE</div>
+      <div class="hole-grid">
+        <button id="holeBtn1" class="hole-btn" type="button"><span class="hnum">1</span><small>–</small></button>
+        <button id="holeBtn2" class="hole-btn" type="button"><span class="hnum">2</span><small>–</small></button>
+        <button id="holeBtn3" class="hole-btn" type="button"><span class="hnum">3</span><small>–</small></button>
+        <button id="holeBtn4" class="hole-btn" type="button"><span class="hnum">4</span><small>–</small></button>
+        <button id="holeBtn5" class="hole-btn" type="button"><span class="hnum">5</span><small>–</small></button>
+        <button id="holeBtn6" class="hole-btn" type="button"><span class="hnum">6</span><small>–</small></button>
+        <button id="holeBtn7" class="hole-btn" type="button"><span class="hnum">7</span><small>–</small></button>
+        <button id="holeBtn8" class="hole-btn" type="button"><span class="hnum">8</span><small>–</small></button>
+        <button id="holeBtn9" class="hole-btn" type="button"><span class="hnum">9</span><small>–</small></button>
+      </div>
+      <ul id="controls">
+        <li>Drag back from anywhere and let go to putt</li>
+        <li>← → aim · ↑ ↓ power · Space putts</li>
+        <li>P or Esc pauses · M turns sound off</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div id="paused" class="overlay">
+  <div class="card">
+    <h2 class="card-title">Paused</h2>
+    <div id="pauseInfo" class="meta-line">Hole 1 of 9 · First Putt · 0 strokes</div>
+    <button id="resumeBtn" class="btn btn-main" type="button">Resume</button>
+    <div class="btn-row">
+      <button id="restartBtn" class="btn btn-outline" type="button">Restart round</button>
+      <button id="menuBtn" class="btn btn-outline" type="button">Menu</button>
+    </div>
+    <label class="sound-toggle"><input id="soundBox2" type="checkbox" checked> Sound</label>
+  </div>
+</div>
+
+<div id="holeCard" class="overlay">
+  <div class="card">
+    <div id="holeEyebrow" class="eyebrow">HOLE 1 · FIRST PUTT</div>
+    <h2 id="holeTitle" class="card-title">Par</h2>
+    <div id="holeLine" class="meta-line">2 strokes · par 2</div>
+    <div id="holeTotal" class="meta-line">Round so far: 2 (E)</div>
+    <div id="holeBest" class="note-line">First time on this hole</div>
+    <button id="nextBtn" class="btn btn-main" type="button">Next hole</button>
+  </div>
+</div>
+
+<div id="roundCard" class="overlay">
+  <div class="card">
+    <div id="roundEyebrow" class="eyebrow">ROUND OVER</div>
+    <h2 id="roundTitle" class="card-title">24 strokes · E</h2>
+    <div id="roundNote" class="note-line">Your first full round.</div>
+    <table id="scoreTable"></table>
+    <div class="btn-row">
+      <button id="againBtn" class="btn btn-main" type="button">Play again</button>
+      <button id="roundMenuBtn" class="btn btn-outline" type="button">Menu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const COURSE_LINES = `
+1 | First Putt | par 2 | tee 240 270 | cup 720 270 | green 160 180 800 180 800 360 160 360
+2 | The Elbow | par 2 | tee 190 180 | cup 640 380 | green 120 110 600 110 700 210 700 440 560 440 560 250 120 250
+3 | Five Posts | par 3 | tee 480 430 | cup 480 110 | green 300 60 660 60 760 160 760 380 660 480 300 480 200 380 200 160 | post 480 270 | post 390 200 | post 570 200 | post 390 340 | post 570 340
+4 | Dunes | par 3 | tee 190 180 | cup 760 360 | green 100 130 600 130 860 410 360 410 | sand 300 190 130 90 | sand 520 260 130 90
+5 | The Pond | par 3 | tee 170 270 | cup 790 270 | green 160 100 800 100 860 160 860 380 800 440 160 440 100 380 100 160 | water 380 210 200 120
+6 | The Hill | par 3 | tee 170 270 | cup 780 270 | green 100 190 340 190 340 220 620 220 620 170 860 170 860 370 620 370 620 320 340 320 340 350 100 350 | slope 340 220 280 100 left
+7 | The Gate | par 2 | tee 330 170 | cup 630 370 | green 260 110 700 110 700 430 260 430 | wall 480 110 480 240 | wall 480 300 480 430 | gate 480 240 480 300
+8 | The Tunnel | par 2 | tee 170 350 | cup 800 270 | green 100 120 460 120 460 420 100 420 | green 560 200 860 200 860 340 560 340 | post 340 230 | post 400 250 | sand 680 200 50 140 | tunnel 400 180 610 270 right
+9 | The Works | par 4 | tee 170 390 | cup 230 150 | green 100 90 780 90 860 170 860 370 780 450 100 450 100 330 720 330 720 210 100 210 | gate 440 330 440 450 | post 560 140 | post 430 165 | sand 560 400 100 50 | sand 100 90 70 120 | water 300 170 80 40 | slope 720 210 140 120 down
+`.trim();
+
+  const DT = 1 / 120;
+
+  function parseCourse(raw) {
+    return raw.split("\n").map(function (line) {
+      const parts = line.split("|").map(function (s) { return s.trim(); });
+      const holeObj = {
+        num: Number(parts[0]),
+        name: parts[1],
+        par: 0,
+        tee: [0, 0],
+        cup: [0, 0],
+        greens: [],
+        walls: [],
+        posts: [],
+        sand: [],
+        water: [],
+        slopes: [],
+        gates: [],
+        tunnel: null
+      };
+      for (let i = 2; i < parts.length; i++) {
+        const tok = parts[i].split(/\s+/);
+        const kind = tok[0];
+        if (kind === "par") holeObj.par = Number(tok[1]);
+        else if (kind === "tee") holeObj.tee = [Number(tok[1]), Number(tok[2])];
+        else if (kind === "cup") holeObj.cup = [Number(tok[1]), Number(tok[2])];
+        else if (kind === "green") holeObj.greens.push(tok.slice(1).map(Number));
+        else if (kind === "wall") holeObj.walls.push(tok.slice(1).map(Number));
+        else if (kind === "post") holeObj.posts.push(tok.slice(1).map(Number));
+        else if (kind === "sand") holeObj.sand.push(tok.slice(1).map(Number));
+        else if (kind === "water") holeObj.water.push(tok.slice(1).map(Number));
+        else if (kind === "slope") holeObj.slopes.push([Number(tok[1]), Number(tok[2]), Number(tok[3]), Number(tok[4]), tok[5]]);
+        else if (kind === "gate") holeObj.gates.push(tok.slice(1).map(Number));
+        else if (kind === "tunnel") holeObj.tunnel = [Number(tok[1]), Number(tok[2]), Number(tok[3]), Number(tok[4]), tok[5]];
+      }
+      return holeObj;
+    });
+  }
+
+  const courseData = parseCourse(COURSE_LINES);
+
+  function emptySave() {
+    return { best: null, holes: [null, null, null, null, null, null, null, null, null] };
+  }
+
+  function loadSave() {
+    try {
+      const raw = window.localStorage.getItem("cuplark.save");
+      if (!raw) return emptySave();
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return emptySave();
+      const best = (typeof parsed.best === "number" && isFinite(parsed.best)) ? parsed.best : null;
+      if (!Array.isArray(parsed.holes) || parsed.holes.length !== 9) return emptySave();
+      const holes = parsed.holes.map(function (v) {
+        return (typeof v === "number" && isFinite(v)) ? v : null;
+      });
+      return { best: best, holes: holes };
+    } catch (e) {
+      return emptySave();
+    }
+  }
+
+  function writeSave(data) {
+    try {
+      window.localStorage.setItem("cuplark.save", JSON.stringify(data));
+    } catch (e) {
+      // ignore storage errors
+    }
+  }
+
+  function loadSoundPref() {
+    try {
+      const val = window.localStorage.getItem("cuplark.sound");
+      if (val === "off") return false;
+      return true;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  function writeSoundPref(on) {
+    try {
+      window.localStorage.setItem("cuplark.sound", on ? "on" : "off");
+    } catch (e) {
+      // ignore storage errors
+    }
+  }
+
+  let saveRecord = loadSave();
+  let soundOn = loadSoundPref();
+
+  // Web Audio system
+  let audioCtx = null;
+  let masterGain = null;
+  let compressor = null;
+  let analyser = null;
+  let analyserBuf = null;
+  let analyserByteBuf = null;
+  let noiseBuffer = null;
+  let maxPeakAmp = 0;
+
+  function sampleAnalyser() {
+    if (!analyser || !audioCtx) return;
+    if (audioCtx.state && audioCtx.state !== "running") return;
+    try {
+      if (analyser.getFloatTimeDomainData && analyserBuf) {
+        analyser.getFloatTimeDomainData(analyserBuf);
+        for (let i = 0; i < analyserBuf.length; i++) {
+          const a = Math.abs(analyserBuf[i]);
+          if (a > maxPeakAmp) maxPeakAmp = a;
+        }
+      } else if (analyser.getByteTimeDomainData && analyserByteBuf) {
+        analyser.getByteTimeDomainData(analyserByteBuf);
+        for (let i = 0; i < analyserByteBuf.length; i++) {
+          const a = Math.abs((analyserByteBuf[i] - 128) / 128);
+          if (a > maxPeakAmp) maxPeakAmp = a;
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      const CtxClass = window.AudioContext || window.webkitAudioContext;
+      if (!CtxClass) return;
+      try {
+        audioCtx = new CtxClass();
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = soundOn ? 0.9 : 0;
+        if (masterGain.gain.setValueAtTime) {
+          masterGain.gain.setValueAtTime(soundOn ? 0.9 : 0, audioCtx.currentTime || 0);
+        }
+
+        compressor = audioCtx.createDynamicsCompressor();
+        compressor.threshold.value = -8;
+        compressor.knee.value = 0;
+        compressor.ratio.value = 20;
+        compressor.attack.value = 0.003;
+        compressor.release.value = 0.12;
+
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 2048;
+        analyserBuf = new Float32Array(analyser.fftSize);
+        analyserByteBuf = new Uint8Array(analyser.fftSize);
+
+        masterGain.connect(compressor);
+        compressor.connect(analyser);
+        analyser.connect(audioCtx.destination);
+
+        const sr = audioCtx.sampleRate || 44100;
+        const len = sr * 2;
+        noiseBuffer = audioCtx.createBuffer(1, len, sr);
+        const ch = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < len; i++) {
+          ch[i] = Math.random() * 2 - 1;
+        }
+
+        if (typeof window.setInterval === "function") {
+          window.setInterval(sampleAnalyser, 12);
+        }
+      } catch (e) {
+        audioCtx = null;
+        return;
+      }
+    }
+    if (audioCtx && audioCtx.state === "suspended" && !(curScreen === "play" && isPaused)) {
+      try {
+        const p = audioCtx.resume();
+        if (p && typeof p.catch === "function") p.catch(function () {});
+      } catch (e) {
+        // ignore
+      }
+    }
+  }
+
+  function suspendAudio() {
+    if (audioCtx && typeof audioCtx.suspend === "function") {
+      try {
+        sampleAnalyser();
+        const p = audioCtx.suspend();
+        if (p && typeof p.catch === "function") p.catch(function () {});
+      } catch (e) {
+        // ignore
+      }
+    }
+  }
+
+  function resumeAudio() {
+    if (audioCtx && typeof audioCtx.resume === "function") {
+      try {
+        const p = audioCtx.resume();
+        if (p && typeof p.catch === "function") p.catch(function () {});
+      } catch (e) {
+        // ignore
+      }
+    }
+  }
+
+  function updateMasterGain() {
+    if (masterGain && audioCtx) {
+      const target = soundOn ? 0.9 : 0;
+      masterGain.gain.value = target;
+      if (masterGain.gain.setValueAtTime) {
+        try {
+          masterGain.gain.setValueAtTime(target, audioCtx.currentTime || 0);
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+  }
+
+  function playTone(type, freqStart, freqEnd, duration, level, delay) {
+    if (!audioCtx || !masterGain) return;
+    try {
+      const now = audioCtx.currentTime || 0;
+      const t0 = now + (delay || 0);
+      const tAttack = t0 + 0.006;
+      const tEnd = t0 + duration;
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freqStart, t0);
+      if (freqEnd && freqEnd !== freqStart) {
+        osc.frequency.exponentialRampToValueAtTime(Math.max(1, freqEnd), tEnd);
+      }
+
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.linearRampToValueAtTime(Math.max(0.0001, level), tAttack);
+      gain.gain.exponentialRampToValueAtTime(0.0001, tEnd);
+
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.start(t0);
+      osc.stop(tEnd + 0.005);
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function playNoise(freq, duration, level, delay) {
+    if (!audioCtx || !masterGain || !noiseBuffer) return;
+    try {
+      const now = audioCtx.currentTime || 0;
+      const t0 = now + (delay || 0);
+      const tAttack = t0 + 0.006;
+      const tEnd = t0 + duration;
+
+      const src = audioCtx.createBufferSource();
+      src.buffer = noiseBuffer;
+      src.loop = true;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(freq, t0);
+      filter.Q.setValueAtTime(0.8, t0);
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.linearRampToValueAtTime(Math.max(0.0001, level), tAttack);
+      gain.gain.exponentialRampToValueAtTime(0.0001, tEnd);
+
+      src.connect(filter);
+      filter.connect(gain);
+      gain.connect(masterGain);
+      src.start(t0);
+      src.stop(tEnd + 0.005);
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function sndStroke(power) {
+    playTone("triangle", 190, 95, 0.1, 0.22 + 0.2 * power, 0);
+    playNoise(1400, 0.05, 0.08 + 0.2 * power, 0);
+  }
+
+  function sndWallHit(speedInto) {
+    const k = Math.min(1, Math.max(0, speedInto / 600));
+    playTone("triangle", 420, 420, 0.06, 0.1 + 0.22 * k, 0);
+  }
+
+  function sndGateHit() {
+    playTone("square", 220, 220, 0.07, 0.16, 0);
+  }
+
+  function sndPostHit() {
+    playTone("sine", 880, 660, 0.14, 0.26, 0);
+  }
+
+  function sndGateToggle() {
+    playNoise(600, 0.05, 0.05, 0);
+  }
+
+  function sndSandEnter() {
+    playNoise(2500, 0.2, 0.14, 0);
+  }
+
+  function sndWater() {
+    playNoise(700, 0.38, 0.32, 0);
+    playTone("sine", 500, 120, 0.3, 0.2, 0);
+  }
+
+  function sndTunnelIn() {
+    playTone("sine", 300, 900, 0.25, 0.22, 0);
+  }
+
+  function sndTunnelOut() {
+    playTone("sine", 900, 300, 0.22, 0.22, 0);
+  }
+
+  function sndHoled(isHoleInOne) {
+    playTone("triangle", 196, 196, 0.12, 0.34, 0);
+    playTone("square", 784, 784, 0.11, 0.14, 0.1);
+    playTone("square", 988, 988, 0.11, 0.14, 0.18);
+    playTone("square", 1175, 1175, 0.11, 0.14, 0.26);
+    if (isHoleInOne) {
+      playTone("square", 1568, 1568, 0.32, 0.14, 0.36);
+      playTone("triangle", 523, 523, 0.65, 0.1, 0.36);
+      playTone("triangle", 659, 659, 0.65, 0.1, 0.36);
+      playTone("triangle", 784, 784, 0.65, 0.1, 0.36);
+    }
+  }
+
+  function sndPickedUp() {
+    playTone("triangle", 330, 330, 0.2, 0.22, 0);
+    playTone("triangle", 262, 262, 0.24, 0.22, 0.16);
+  }
+
+  function sndRoundCard() {
+    playTone("square", 523, 523, 0.14, 0.16, 0);
+    playTone("square", 659, 659, 0.14, 0.16, 0.11);
+    playTone("square", 784, 784, 0.14, 0.16, 0.22);
+    playTone("square", 1047, 1047, 0.14, 0.16, 0.33);
+  }
+
+  function sndButton() {
+    playTone("square", 660, 660, 0.05, 0.1, 0);
+  }
+
+  // Visual Effects state (only while screen is "play")
+  let fxParticles = [];
+  let fxRings = [];
+  let postSwellSteps = [];
+
+  function clearFx() {
+    fxParticles.length = 0;
+    fxRings.length = 0;
+    postSwellSteps.length = 0;
+  }
+
+  function spawnRing(x, y, r0, r1, maxLife, color, width, delay) {
+    if (curScreen !== "play") return;
+    fxRings.push({
+      x: x,
+      y: y,
+      r0: r0,
+      r1: r1,
+      age: -(delay || 0),
+      maxLife: maxLife,
+      color: color || "#ffffff",
+      width: width || 2.2
+    });
+  }
+
+  function spawnStrokeFx(x, y) {
+    if (curScreen !== "play") return;
+    spawnRing(x, y, 7, 26, 24, "#ffffff", 2.5, 0);
+  }
+
+  function spawnImpactSparks(x, y, nx, ny, speedInto, colorA, colorB) {
+    if (curScreen !== "play") return;
+    const count = Math.min(18, 5 + Math.floor(speedInto / 45));
+    const baseAngle = Math.atan2(ny, nx);
+    for (let i = 0; i < count; i++) {
+      const spread = (Math.random() - 0.5) * 2.2;
+      const ang = baseAngle + spread;
+      const spd = 45 + Math.random() * (60 + speedInto * 0.28);
+      const life = 16 + Math.floor(Math.random() * 16);
+      fxParticles.push({
+        x: x,
+        y: y,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd,
+        r: 1.8 + Math.random() * 1.6,
+        age: 0,
+        maxLife: life,
+        color: (i % 2 === 0) ? colorA : colorB,
+        drag: 0.92,
+        gravity: 0
+      });
+    }
+  }
+
+  function spawnSandGrains(x, y, vx, vy, speed) {
+    if (curScreen !== "play") return;
+    const count = speed > 220 ? 2 : 1;
+    const backAngle = Math.atan2(-vy, -vx);
+    for (let i = 0; i < count; i++) {
+      const ang = backAngle + (Math.random() - 0.5) * 1.4;
+      const spd = 25 + Math.random() * Math.min(140, speed * 0.45);
+      const life = 14 + Math.floor(Math.random() * 12);
+      fxParticles.push({
+        x: x + (Math.random() - 0.5) * 8,
+        y: y + (Math.random() - 0.5) * 8,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd,
+        r: 1.5 + Math.random() * 1.2,
+        age: 0,
+        maxLife: life,
+        color: (Math.random() < 0.5) ? "#dcb964" : "#f2d58a",
+        drag: 0.9,
+        gravity: 0
+      });
+    }
+  }
+
+  function spawnWaterFx(x, y) {
+    if (curScreen !== "play") return;
+    // Three widening rings
+    spawnRing(x, y, 4, 24, 30, "#ffffff", 2.5, 0);
+    spawnRing(x, y, 4, 34, 42, "#9bd6ff", 2.2, 6);
+    spawnRing(x, y, 4, 44, 54, "#9bd6ff", 1.8, 12);
+    // Drops
+    for (let i = 0; i < 16; i++) {
+      const ang = (i / 16) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+      const spd = 40 + Math.random() * 110;
+      const life = 22 + Math.floor(Math.random() * 18);
+      fxParticles.push({
+        x: x,
+        y: y,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd - 30,
+        r: 2 + Math.random() * 1.6,
+        age: 0,
+        maxLife: life,
+        color: (i % 3 === 0) ? "#ffffff" : "#9bd6ff",
+        drag: 0.94,
+        gravity: 180
+      });
+    }
+  }
+
+  function spawnTunnelRing(x, y) {
+    if (curScreen !== "play") return;
+    spawnRing(x, y, 10, 34, 30, "#9a7bff", 3, 0);
+  }
+
+  function spawnHoledFx(x, y, isHoleInOne) {
+    if (curScreen !== "play") return;
+    // Gold sparks from the cup
+    const goldColors = ["#ffd98a", "#ffeaad", "#f5b942", "#fff6e0"];
+    for (let i = 0; i < 26; i++) {
+      const ang = (i / 26) * Math.PI * 2 + (Math.random() - 0.5) * 0.25;
+      const spd = 55 + Math.random() * 155;
+      const life = 35 + Math.floor(Math.random() * 28);
+      fxParticles.push({
+        x: x,
+        y: y,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd,
+        r: 2 + Math.random() * 1.8,
+        age: 0,
+        maxLife: life,
+        color: goldColors[i % goldColors.length],
+        drag: 0.94,
+        gravity: 0
+      });
+    }
+    if (isHoleInOne) {
+      const confettiColors = ["#ff6b5e", "#3fa9f5", "#4fbf7f", "#ffd98a", "#9a7bff", "#fff1d0"];
+      for (let i = 0; i < 40; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const spd = 70 + Math.random() * 210;
+        const life = 55 + Math.floor(Math.random() * 32);
+        fxParticles.push({
+          x: x,
+          y: y,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd - 25,
+          r: 2.8 + Math.random() * 1.8,
+          age: 0,
+          maxLife: life,
+          color: confettiColors[i % confettiColors.length],
+          drag: 0.95,
+          gravity: 90,
+          confetti: true,
+          rot: Math.random() * Math.PI * 2,
+          vrot: (Math.random() - 0.5) * 14
+        });
+      }
+    }
+  }
+
+  function stepFx() {
+    for (let i = fxRings.length - 1; i >= 0; i--) {
+      const rng = fxRings[i];
+      rng.age += 1;
+      if (rng.age >= rng.maxLife) {
+        fxRings.splice(i, 1);
+      }
+    }
+    for (let i = fxParticles.length - 1; i >= 0; i--) {
+      const p = fxParticles[i];
+      p.age += 1;
+      if (p.age >= p.maxLife) {
+        fxParticles.splice(i, 1);
+        continue;
+      }
+      if (p.gravity) {
+        p.vy += p.gravity * DT;
+      }
+      p.vx *= p.drag;
+      p.vy *= p.drag;
+      p.x += p.vx * DT;
+      p.y += p.vy * DT;
+      if (p.confetti) {
+        p.rot += p.vrot * DT;
+      }
+    }
+    for (let i = 0; i < postSwellSteps.length; i++) {
+      if (postSwellSteps[i] > 0) {
+        postSwellSteps[i] -= 1;
+      }
+    }
+  }
+
+  // DOM references
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const hudEl = document.getElementById("hud");
+  const hudHoleEl = document.getElementById("hudHole");
+  const hudNameEl = document.getElementById("hudName");
+  const hudParEl = document.getElementById("hudPar");
+  const hudStrokesEl = document.getElementById("hudStrokes");
+  const hudTotalEl = document.getElementById("hudTotal");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const calloutEl = document.getElementById("callout");
+
+  const titleOverlay = document.getElementById("title");
+  const playBtn = document.getElementById("playBtn");
+  const bestLineEl = document.getElementById("bestLine");
+  const controlsListEl = document.getElementById("controls");
+  const soundBox1 = document.getElementById("soundBox1");
+  const holeBtns = [];
+  for (let i = 1; i <= 9; i++) {
+    holeBtns.push(document.getElementById("holeBtn" + i));
+  }
+
+  const pausedOverlay = document.getElementById("paused");
+  const pauseInfoEl = document.getElementById("pauseInfo");
+  const resumeBtn = document.getElementById("resumeBtn");
+  const restartBtn = document.getElementById("restartBtn");
+  const menuBtn = document.getElementById("menuBtn");
+  const soundBox2 = document.getElementById("soundBox2");
+
+  const holeOverlay = document.getElementById("holeCard");
+  const holeEyebrowEl = document.getElementById("holeEyebrow");
+  const holeTitleEl = document.getElementById("holeTitle");
+  const holeLineEl = document.getElementById("holeLine");
+  const holeTotalEl = document.getElementById("holeTotal");
+  const holeBestEl = document.getElementById("holeBest");
+  const nextBtn = document.getElementById("nextBtn");
+
+  const roundOverlay = document.getElementById("roundCard");
+  const roundEyebrowEl = document.getElementById("roundEyebrow");
+  const roundTitleEl = document.getElementById("roundTitle");
+  const roundNoteEl = document.getElementById("roundNote");
+  const scoreTableEl = document.getElementById("scoreTable");
+  const againBtn = document.getElementById("againBtn");
+  const roundMenuBtn = document.getElementById("roundMenuBtn");
+
+  // Layout state
+  let winW = window.innerWidth || 960;
+  let winH = window.innerHeight || 540;
+  let dpr = window.devicePixelRatio || 1;
+  let orient = "landscape";
+  let fieldScale = 1;
+  let fieldLeft = 0;
+  let fieldTop = 52;
+  let isTouch = false;
+
+  function detectTouch() {
+    try {
+      return !!(window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function updateControlsText() {
+    isTouch = detectTouch();
+    const lines = isTouch
+      ? [
+          "Drag back from anywhere and let go to putt",
+          "The further you drag, the harder the putt",
+          "Tap the pause button to stop"
+        ]
+      : [
+          "Drag back from anywhere and let go to putt",
+          "\u2190 \u2192 aim \u00b7 \u2191 \u2193 power \u00b7 Space putts",
+          "P or Esc pauses \u00b7 M turns sound off"
+        ];
+    const items = controlsListEl.querySelectorAll("li");
+    for (let i = 0; i < 3; i++) {
+      if (items[i]) items[i].textContent = lines[i];
+    }
+  }
+
+  function updateLayout() {
+    winW = window.innerWidth || 960;
+    winH = window.innerHeight || 540;
+    dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, Math.round(winW * dpr));
+    canvas.height = Math.max(1, Math.round(winH * dpr));
+
+    if (winW >= winH) {
+      orient = "landscape";
+      fieldScale = Math.min((winW - 16) / 960, (winH - 60) / 540);
+      const boxW = 960 * fieldScale;
+      const boxH = 540 * fieldScale;
+      fieldLeft = (winW - boxW) / 2;
+      fieldTop = 52 + (winH - 60 - boxH) / 2;
+    } else {
+      orient = "portrait";
+      fieldScale = Math.min((winW - 16) / 540, (winH - 60) / 960);
+      const boxW = 540 * fieldScale;
+      const boxH = 960 * fieldScale;
+      fieldLeft = (winW - boxW) / 2;
+      fieldTop = 52 + (winH - 60 - boxH) / 2;
+    }
+    updateControlsText();
+  }
+
+  function screenOf(x, y) {
+    if (orient === "landscape") {
+      return {
+        x: fieldLeft + x * fieldScale,
+        y: fieldTop + y * fieldScale
+      };
+    } else {
+      return {
+        x: fieldLeft + y * fieldScale,
+        y: fieldTop + (960 - x) * fieldScale
+      };
+    }
+  }
+
+  function toField(sx, sy) {
+    if (orient === "landscape") {
+      return {
+        x: (sx - fieldLeft) / fieldScale,
+        y: (sy - fieldTop) / fieldScale
+      };
+    } else {
+      return {
+        x: 960 - (sy - fieldTop) / fieldScale,
+        y: (sx - fieldLeft) / fieldScale
+      };
+    }
+  }
+
+  function formatVsPar(diff) {
+    if (diff === 0) return "E";
+    if (diff > 0) return "+" + diff;
+    return "\u2212" + (-diff);
+  }
+
+  function getScoreName(score, par, picked) {
+    if (picked) return "Picked up";
+    if (score === 1) return "Hole in one!";
+    const diff = score - par;
+    if (diff <= -2) return "Eagle";
+    if (diff === -1) return "Birdie";
+    if (diff === 0) return "Par";
+    if (diff === 1) return "Bogey";
+    if (diff === 2) return "Double bogey";
+    return "+" + diff;
+  }
+
+  // Hole simulation state creation and step
+  function createHoleState(def) {
+    const angle = Math.atan2(def.cup[1] - def.tee[1], def.cup[0] - def.tee[0]) * 180 / Math.PI;
+    return {
+      def: def,
+      clock: 0,
+      strokes: 0,
+      ball: { x: def.tee[0], y: def.tee[1], vx: 0, vy: 0, still: 0 },
+      lastX: def.tee[0],
+      lastY: def.tee[1],
+      aim: { angle: angle, power: 0.5 },
+      phase: "rest",
+      count: 0,
+      result: null,
+      calloutText: "Hole " + def.num + " \u00b7 " + def.name + " \u00b7 Par " + def.par,
+      calloutTimer: 192,
+      wasOnSand: false,
+      lastWallSoundClock: -999
+    };
+  }
+
+  function inRect(x, y, r) {
+    return x >= r[0] && x <= r[0] + r[2] && y >= r[1] && y <= r[1] + r[3];
+  }
+
+  function comeToRest(st, isDemo) {
+    const b = st.ball;
+    b.vx = 0;
+    b.vy = 0;
+    b.still = 0;
+    st.wasOnSand = false;
+    st.aim.angle = Math.atan2(st.def.cup[1] - b.y, st.def.cup[0] - b.x) * 180 / Math.PI;
+    st.aim.power = 0.5;
+    if (st.strokes >= 8) {
+      st.phase = "end";
+      st.count = 90;
+      st.result = "picked";
+      st.calloutText = "Picked up";
+      st.calloutTimer = 90;
+      if (!isDemo) {
+        sndPickedUp();
+      }
+    } else {
+      st.phase = "rest";
+    }
+  }
+
+  function shootOnHole(st, angle, power, isDemo) {
+    if (st.phase !== "rest") return false;
+    const p = Math.max(0.05, Math.min(1, power));
+    st.aim.angle = angle;
+    st.aim.power = p;
+    st.lastX = st.ball.x;
+    st.lastY = st.ball.y;
+    st.strokes += 1;
+    const rad = angle * Math.PI / 180;
+    st.ball.vx = 700 * p * Math.cos(rad);
+    st.ball.vy = 700 * p * Math.sin(rad);
+    st.ball.still = 0;
+    st.wasOnSand = false;
+    st.phase = "roll";
+    if (!isDemo) {
+      spawnStrokeFx(st.ball.x, st.ball.y);
+      sndStroke(p);
+    }
+    return true;
+  }
+
+  function stepHole(st, isDemo) {
+    const h = st.def;
+    const b = st.ball;
+    const gatesShut = Math.floor(st.clock / 180) % 2 === 0;
+    if (!isDemo && h.gates.length > 0 && st.clock > 0 && (st.clock % 180 === 0)) {
+      sndGateToggle();
+    }
+    st.clock += 1;
+
+    if (st.calloutTimer > 0) {
+      st.calloutTimer -= 1;
+      if (st.calloutTimer === 0) {
+        st.calloutText = null;
+      }
+    }
+
+    if (st.phase === "roll") {
+      // 1. Ground
+      let onSand = false;
+      for (let i = 0; i < h.sand.length; i++) {
+        if (inRect(b.x, b.y, h.sand[i])) {
+          onSand = true;
+          break;
+        }
+      }
+      if (!isDemo && onSand && !st.wasOnSand) {
+        sndSandEnter();
+      }
+      st.wasOnSand = onSand;
+
+      let slope = null;
+      for (let i = 0; i < h.slopes.length; i++) {
+        if (inRect(b.x, b.y, h.slopes[i])) {
+          slope = h.slopes[i];
+          break;
+        }
+      }
+
+      // 2. Slope
+      if (slope) {
+        const dir = slope[4];
+        if (dir === "right") b.vx += 240 * DT;
+        else if (dir === "left") b.vx -= 240 * DT;
+        else if (dir === "down") b.vy += 240 * DT;
+        else if (dir === "up") b.vy -= 240 * DT;
+      }
+
+      // 3. Friction
+      let speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+      const drop = (onSand ? 800 : 160) * DT;
+      if (speed <= drop) {
+        b.vx = 0;
+        b.vy = 0;
+      } else {
+        const f = (speed - drop) / speed;
+        b.vx *= f;
+        b.vy *= f;
+      }
+
+      // 4. Cap
+      speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+      if (speed > 700) {
+        const f = 700 / speed;
+        b.vx *= f;
+        b.vy *= f;
+      }
+
+      if (!isDemo && onSand && speed > 20) {
+        spawnSandGrains(b.x, b.y, b.vx, b.vy, speed);
+      }
+
+      // 5. Move
+      b.x += b.vx * DT;
+      b.y += b.vy * DT;
+
+      // 6. Walls
+      const collideWall = function (Ax, Ay, Bx, By, isGate) {
+        const abx = Bx - Ax;
+        const aby = By - Ay;
+        let t = ((b.x - Ax) * abx + (b.y - Ay) * aby) / (abx * abx + aby * aby);
+        if (t < 0) t = 0;
+        else if (t > 1) t = 1;
+        const Cx = Ax + t * abx;
+        const Cy = Ay + t * aby;
+        const dx = b.x - Cx;
+        const dy = b.y - Cy;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 14 && d !== 0) {
+          const nx = dx / d;
+          const ny = dy / d;
+          b.x = Cx + 14 * nx;
+          b.y = Cy + 14 * ny;
+          const vn = b.vx * nx + b.vy * ny;
+          if (vn < 0) {
+            b.vx -= 1.8 * vn * nx;
+            b.vy -= 1.8 * vn * ny;
+          }
+          if (!isDemo && vn < -30) {
+            const speedInto = -vn;
+            if (isGate) {
+              spawnImpactSparks(Cx, Cy, nx, ny, speedInto, "#ff6b5e", "#fff1d0");
+              sndGateHit();
+            } else {
+              spawnImpactSparks(Cx, Cy, nx, ny, speedInto, "#fff1d0", "#ffd98a");
+              if ((st.clock - st.lastWallSoundClock) * DT >= 0.03) {
+                st.lastWallSoundClock = st.clock;
+                sndWallHit(speedInto);
+              }
+            }
+          }
+        }
+      };
+
+      for (let gi = 0; gi < h.greens.length; gi++) {
+        const g = h.greens[gi];
+        const n = g.length;
+        for (let i = 0; i < n; i += 2) {
+          collideWall(g[i], g[i + 1], g[(i + 2) % n], g[(i + 3) % n], false);
+        }
+      }
+      for (let wi = 0; wi < h.walls.length; wi++) {
+        const w = h.walls[wi];
+        collideWall(w[0], w[1], w[2], w[3], false);
+      }
+      if (gatesShut) {
+        for (let gi = 0; gi < h.gates.length; gi++) {
+          const g = h.gates[gi];
+          collideWall(g[0], g[1], g[2], g[3], true);
+        }
+      }
+
+      // 7. Posts
+      for (let pi = 0; pi < h.posts.length; pi++) {
+        const p = h.posts[pi];
+        const Cx = p[0];
+        const Cy = p[1];
+        const dx = b.x - Cx;
+        const dy = b.y - Cy;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 23 && d !== 0) {
+          const nx = dx / d;
+          const ny = dy / d;
+          b.x = Cx + 23 * nx;
+          b.y = Cy + 23 * ny;
+          const vn = b.vx * nx + b.vy * ny;
+          if (vn < 0) {
+            b.vx -= 1.8 * vn * nx;
+            b.vy -= 1.8 * vn * ny;
+          }
+          if (!isDemo && vn < -30) {
+            const speedInto = -vn;
+            spawnImpactSparks(Cx + 14 * nx, Cy + 14 * ny, nx, ny, speedInto, "#ffc2bb", "#fff1d0");
+            postSwellSteps[pi] = 22; // 0.18 s at 120 Hz
+            sndPostHit();
+          }
+        }
+      }
+
+      // 8. Water
+      for (let wi = 0; wi < h.water.length; wi++) {
+        if (inRect(b.x, b.y, h.water[wi])) {
+          st.strokes += 1;
+          b.vx = 0;
+          b.vy = 0;
+          st.phase = "splash";
+          st.count = 60;
+          st.calloutText = "Splash! +1 stroke";
+          st.calloutTimer = 150;
+          if (!isDemo) {
+            spawnWaterFx(b.x, b.y);
+            sndWater();
+          }
+          return;
+        }
+      }
+
+      // 9. Tunnel
+      if (h.tunnel) {
+        const dx = b.x - h.tunnel[0];
+        const dy = b.y - h.tunnel[1];
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 14) {
+          b.x = h.tunnel[0];
+          b.y = h.tunnel[1];
+          b.vx = 0;
+          b.vy = 0;
+          st.phase = "tunnel";
+          st.count = 48;
+          if (!isDemo) {
+            spawnTunnelRing(h.tunnel[0], h.tunnel[1]);
+            sndTunnelIn();
+          }
+          return;
+        }
+      }
+
+      // 10. Cup
+      speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+      const cdx = b.x - h.cup[0];
+      const cdy = b.y - h.cup[1];
+      const cd = Math.sqrt(cdx * cdx + cdy * cdy);
+      if (cd < 15 && speed <= 260) {
+        b.x = h.cup[0];
+        b.y = h.cup[1];
+        b.vx = 0;
+        b.vy = 0;
+        st.phase = "end";
+        st.count = 90;
+        st.result = "holed";
+        if (!isDemo) {
+          const isHio = st.strokes === 1;
+          spawnHoledFx(h.cup[0], h.cup[1], isHio);
+          sndHoled(isHio);
+        }
+        return;
+      }
+
+      // 11. Rest
+      if (speed < 5) {
+        b.still += 1;
+      } else {
+        b.still = 0;
+      }
+      if (b.still === 30) {
+        comeToRest(st, isDemo);
+      }
+    } else if (st.phase === "splash") {
+      st.count -= 1;
+      if (st.count === 0) {
+        b.x = st.lastX;
+        b.y = st.lastY;
+        comeToRest(st, isDemo);
+      }
+    } else if (st.phase === "tunnel") {
+      st.count -= 1;
+      if (st.count === 0) {
+        b.x = h.tunnel[2];
+        b.y = h.tunnel[3];
+        const dir = h.tunnel[4];
+        b.vx = dir === "right" ? 380 : dir === "left" ? -380 : 0;
+        b.vy = dir === "down" ? 380 : dir === "up" ? -380 : 0;
+        b.still = 0;
+        st.wasOnSand = false;
+        st.phase = "roll";
+        if (!isDemo) {
+          spawnTunnelRing(h.tunnel[2], h.tunnel[3]);
+          sndTunnelOut();
+        }
+      }
+    } else if (st.phase === "end") {
+      st.count -= 1;
+      if (st.count === 0) {
+        st.phase = "done";
+      }
+    }
+  }
+
+  // Overall game state
+  let curScreen = "title";
+  let isPaused = false;
+  let isPractice = false;
+  let roundStartHole = 1;
+  let curHole = createHoleState(courseData[0]);
+  let roundScores = [null, null, null, null, null, null, null, null, null];
+  let lastFinished = null;
+
+  let demoState = createHoleState(courseData[1]);
+  let demoClock = 0;
+
+  let dragging = false;
+  let dragDownX = 0;
+  let dragDownY = 0;
+  let dragPointerId = null;
+  let dragSavedAngle = 0;
+  let dragSavedPower = 0.5;
+
+  const heldKeys = Object.create(null);
+
+  function clearInputStates() {
+    if (dragging && curHole) {
+      curHole.aim.angle = dragSavedAngle;
+      curHole.aim.power = dragSavedPower;
+    }
+    dragging = false;
+    dragPointerId = null;
+    for (const k in heldKeys) {
+      delete heldKeys[k];
+    }
+  }
+
+  function computeTotals() {
+    let total = 0;
+    let totalPar = 0;
+    for (let i = 0; i < 9; i++) {
+      if (roundScores[i] !== null) {
+        total += roundScores[i];
+        totalPar += courseData[i].par;
+      }
+    }
+    return { total: total, totalPar: totalPar };
+  }
+
+  function syncSoundBoxes() {
+    soundBox1.checked = soundOn;
+    soundBox2.checked = soundOn;
+  }
+
+  function refreshTitleUI() {
+    if (saveRecord.best === null) {
+      bestLineEl.textContent = "No round finished yet";
+    } else {
+      bestLineEl.textContent = "Best round: " + saveRecord.best + " (" + formatVsPar(saveRecord.best - 24) + ")";
+    }
+    for (let i = 0; i < 9; i++) {
+      const small = holeBtns[i].querySelector("small");
+      if (small) {
+        small.textContent = saveRecord.holes[i] === null ? "\u2013" : "best " + saveRecord.holes[i];
+      }
+    }
+    updateControlsText();
+    syncSoundBoxes();
+  }
+
+  function refreshHudAndOverlays() {
+    if (curScreen === "title") {
+      hudEl.classList.add("hide");
+    } else {
+      hudEl.classList.remove("hide");
+      const h = curHole.def;
+      hudHoleEl.textContent = "Hole " + h.num + "/9";
+      hudNameEl.textContent = h.name;
+      hudParEl.textContent = "Par " + h.par;
+      hudStrokesEl.textContent = "Strokes " + curHole.strokes;
+      const tots = computeTotals();
+      hudTotalEl.textContent = "Total " + formatVsPar(tots.total - tots.totalPar);
+    }
+
+    if (curScreen === "play" && curHole.calloutText) {
+      calloutEl.textContent = curHole.calloutText;
+      calloutEl.classList.add("on");
+    } else {
+      calloutEl.textContent = "";
+      calloutEl.classList.remove("on");
+    }
+
+    titleOverlay.classList.toggle("on", curScreen === "title");
+    pausedOverlay.classList.toggle("on", curScreen === "play" && isPaused);
+    holeOverlay.classList.toggle("on", curScreen === "hole");
+    roundOverlay.classList.toggle("on", curScreen === "round");
+  }
+
+  function loadHole(num) {
+    clearInputStates();
+    clearFx();
+    const def = courseData[num - 1];
+    curHole = createHoleState(def);
+    postSwellSteps = new Array(def.posts.length).fill(0);
+    curScreen = "play";
+    isPaused = false;
+    refreshHudAndOverlays();
+  }
+
+  function startFullRound() {
+    resumeAudio();
+    isPractice = false;
+    roundStartHole = 1;
+    roundScores = [null, null, null, null, null, null, null, null, null];
+    loadHole(1);
+  }
+
+  function startPracticeRound(n) {
+    resumeAudio();
+    const holeNum = Math.max(1, Math.min(9, Math.floor(Number(n) || 1)));
+    isPractice = true;
+    roundStartHole = holeNum;
+    roundScores = [null, null, null, null, null, null, null, null, null];
+    loadHole(holeNum);
+  }
+
+  function showMenu() {
+    resumeAudio();
+    clearInputStates();
+    clearFx();
+    curScreen = "title";
+    isPaused = false;
+    demoState = createHoleState(courseData[1]);
+    demoClock = 0;
+    refreshTitleUI();
+    refreshHudAndOverlays();
+  }
+
+  function pauseGame() {
+    if (curScreen !== "play" || isPaused) return;
+    clearInputStates();
+    isPaused = true;
+    suspendAudio();
+    const h = curHole.def;
+    const sWord = curHole.strokes === 1 ? "1 stroke" : curHole.strokes + " strokes";
+    pauseInfoEl.textContent = "Hole " + h.num + " of 9 \u00b7 " + h.name + " \u00b7 " + sWord;
+    refreshHudAndOverlays();
+  }
+
+  function resumeGame() {
+    if (curScreen !== "play" || !isPaused) return;
+    isPaused = false;
+    resumeAudio();
+    refreshHudAndOverlays();
+  }
+
+  function onHoleFinished() {
+    clearInputStates();
+    const h = curHole.def;
+    const idx = h.num - 1;
+    const score = Math.min(8, curHole.strokes);
+    const picked = curHole.result === "picked";
+    const sName = getScoreName(score, h.par, picked);
+
+    roundScores[idx] = score;
+    lastFinished = {
+      hole: h.num,
+      strokes: score,
+      par: h.par,
+      name: sName,
+      picked: picked,
+      practice: isPractice
+    };
+
+    const prevBest = saveRecord.holes[idx];
+    let bestNote = "";
+    if (isPractice) {
+      bestNote = "Practice: not saved";
+    } else if (prevBest === null) {
+      bestNote = "First time on this hole";
+    } else if (score < prevBest) {
+      bestNote = "New best on this hole!";
+    } else {
+      bestNote = "Your best on this hole: " + prevBest;
+    }
+
+    if (!isPractice) {
+      if (prevBest === null || score < prevBest) {
+        saveRecord.holes[idx] = score;
+        writeSave(saveRecord);
+      }
+    }
+
+    const tots = computeTotals();
+    holeEyebrowEl.textContent = "HOLE " + h.num + " \u00b7 " + h.name.toUpperCase();
+    holeTitleEl.textContent = sName;
+    holeLineEl.textContent = (score === 1 ? "1 stroke" : score + " strokes") + " \u00b7 par " + h.par;
+    holeTotalEl.textContent = "Round so far: " + tots.total + " (" + formatVsPar(tots.total - tots.totalPar) + ")";
+    holeBestEl.textContent = bestNote;
+    nextBtn.textContent = h.num < 9 ? "Next hole" : "Scorecard";
+
+    curScreen = "hole";
+    isPaused = false;
+    refreshHudAndOverlays();
+  }
+
+  function buildScoreTable() {
+    scoreTableEl.innerHTML = "";
+    const rowHole = document.createElement("tr");
+    const rowPar = document.createElement("tr");
+    const rowYou = document.createElement("tr");
+
+    const thHole = document.createElement("th");
+    thHole.textContent = "Hole";
+    rowHole.appendChild(thHole);
+
+    const thPar = document.createElement("th");
+    thPar.textContent = "Par";
+    rowPar.appendChild(thPar);
+
+    const thYou = document.createElement("th");
+    thYou.textContent = "You";
+    rowYou.appendChild(thYou);
+
+    for (let i = 0; i < 9; i++) {
+      const c1 = document.createElement("td");
+      c1.textContent = String(i + 1);
+      rowHole.appendChild(c1);
+
+      const c2 = document.createElement("td");
+      c2.textContent = String(courseData[i].par);
+      rowPar.appendChild(c2);
+
+      const c3 = document.createElement("td");
+      c3.textContent = roundScores[i] === null ? "\u2013" : String(roundScores[i]);
+      rowYou.appendChild(c3);
+    }
+
+    scoreTableEl.appendChild(rowHole);
+    scoreTableEl.appendChild(rowPar);
+    scoreTableEl.appendChild(rowYou);
+  }
+
+  function showRoundCard() {
+    const tots = computeTotals();
+    const diff = tots.total - tots.totalPar;
+    roundEyebrowEl.textContent = isPractice ? "PRACTICE ROUND" : "ROUND OVER";
+    roundTitleEl.textContent = (tots.total === 1 ? "1 stroke" : tots.total + " strokes") + " \u00b7 " + formatVsPar(diff);
+
+    const prevBest = saveRecord.best;
+    let note = "";
+    if (isPractice) {
+      note = "Practice: not saved";
+    } else if (prevBest === null) {
+      note = "Your first full round.";
+    } else if (tots.total < prevBest) {
+      note = "New best round!";
+    } else {
+      note = "Best round: " + prevBest + " (" + formatVsPar(prevBest - 24) + ")";
+    }
+    roundNoteEl.textContent = note;
+
+    if (!isPractice) {
+      if (prevBest === null || tots.total < prevBest) {
+        saveRecord.best = tots.total;
+        writeSave(saveRecord);
+      }
+    }
+
+    buildScoreTable();
+    curScreen = "round";
+    isPaused = false;
+    sndRoundCard();
+    refreshHudAndOverlays();
+  }
+
+  function nextFromHoleCard() {
+    if (curScreen !== "hole") return;
+    if (curHole.def.num < 9) {
+      loadHole(curHole.def.num + 1);
+    } else {
+      showRoundCard();
+    }
+  }
+
+  function tickOneStep() {
+    if (curScreen === "title") {
+      if (demoClock % 720 === 0) {
+        demoState = createHoleState(courseData[1]);
+        shootOnHole(demoState, 14, 0.76, true);
+      }
+      stepHole(demoState, true);
+      demoClock += 1;
+      return;
+    }
+
+    if (curScreen !== "play" || isPaused) {
+      return;
+    }
+
+    stepFx();
+
+    if (curHole.phase === "rest") {
+      if (heldKeys.ArrowLeft !== undefined) {
+        heldKeys.ArrowLeft += 1;
+        if (heldKeys.ArrowLeft > 30) curHole.aim.angle -= 0.5;
+      }
+      if (heldKeys.ArrowRight !== undefined) {
+        heldKeys.ArrowRight += 1;
+        if (heldKeys.ArrowRight > 30) curHole.aim.angle += 0.5;
+      }
+      if (heldKeys.ArrowUp !== undefined) {
+        heldKeys.ArrowUp += 1;
+        if (heldKeys.ArrowUp > 30) curHole.aim.power = Math.max(0.05, Math.min(1, curHole.aim.power + 0.005));
+      }
+      if (heldKeys.ArrowDown !== undefined) {
+        heldKeys.ArrowDown += 1;
+        if (heldKeys.ArrowDown > 30) curHole.aim.power = Math.max(0.05, Math.min(1, curHole.aim.power - 0.005));
+      }
+    }
+
+    const prevStrokes = curHole.strokes;
+    const prevCallout = curHole.calloutText;
+    stepHole(curHole, false);
+
+    if (curHole.phase === "done") {
+      onHoleFinished();
+    } else if (curHole.strokes !== prevStrokes || curHole.calloutText !== prevCallout) {
+      refreshHudAndOverlays();
+    }
+  }
+
+  // Drawing helpers
+  function traceRoundedRect(x, y, w, h, r) {
+    const rad = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rad, y);
+    ctx.lineTo(x + w - rad, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + rad);
+    ctx.lineTo(x + w, y + h - rad);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - rad, y + h);
+    ctx.lineTo(x + rad, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - rad);
+    ctx.lineTo(x, y + rad);
+    ctx.quadraticCurveTo(x, y, x + rad, y);
+    ctx.closePath();
+  }
+
+  function tracePolygon(pts, ox, oy) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0] + ox, pts[1] + oy);
+    for (let i = 2; i < pts.length; i += 2) {
+      ctx.lineTo(pts[i] + ox, pts[i + 1] + oy);
+    }
+    ctx.closePath();
+  }
+
+  function drawScene() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // 1. Page background in CSS px over the whole window
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, winH);
+    bgGrad.addColorStop(0, "#1c2b50");
+    bgGrad.addColorStop(1, "#111a33");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, winW, winH);
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.07)";
+    const gridStep = 36;
+    let rowIdx = 0;
+    for (let gy = 18; gy < winH; gy += gridStep) {
+      const offset = (rowIdx % 2 === 1) ? 18 : 0;
+      for (let gx = 18 + offset; gx < winW; gx += gridStep) {
+        ctx.beginPath();
+        ctx.arc(gx, gy, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      rowIdx++;
+    }
+
+    // Field transform
+    ctx.save();
+    if (orient === "landscape") {
+      ctx.translate(fieldLeft, fieldTop);
+      ctx.scale(fieldScale, fieldScale);
+    } else {
+      ctx.translate(fieldLeft, fieldTop + 960 * fieldScale);
+      ctx.rotate(-Math.PI / 2);
+      ctx.scale(fieldScale, fieldScale);
+    }
+
+    // Screen unit vectors expressed in field space
+    const scrRightX = orient === "portrait" ? 0 : 1;
+    const scrRightY = orient === "portrait" ? 1 : 0;
+    const scrDownX = orient === "portrait" ? -1 : 0;
+    const scrDownY = orient === "portrait" ? 0 : 1;
+
+    const isPlayingScreen = curScreen === "play";
+    const activeState = curScreen === "title" ? demoState : curHole;
+    const h = activeState.def;
+    const gatesShut = Math.floor(activeState.clock / 180) % 2 === 0;
+    const animT = isPlayingScreen ? (activeState.clock * DT) : 0;
+
+    // 2. Under each green a shadow: outline filled and stroked 22 wide in #0b1226, moved 9 down the screen
+    ctx.fillStyle = "#0b1226";
+    ctx.strokeStyle = "#0b1226";
+    ctx.lineWidth = 22;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    for (let gi = 0; gi < h.greens.length; gi++) {
+      tracePolygon(h.greens[gi], 9 * scrDownX, 9 * scrDownY);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    // 3. Each green filled #4fbf7f, with mown stripes clipped to it in #59c98a: bands 40 wide (0..40, 80..120, ...)
+    for (let gi = 0; gi < h.greens.length; gi++) {
+      ctx.save();
+      tracePolygon(h.greens[gi], 0, 0);
+      ctx.fillStyle = "#4fbf7f";
+      ctx.fill();
+      ctx.clip();
+      ctx.fillStyle = "#59c98a";
+      for (let bx = 0; bx < 960; bx += 80) {
+        ctx.fillRect(bx, 0, 40, 540);
+      }
+      ctx.restore();
+    }
+
+    // 4. Slopes, sand, water
+    // Slopes: rectangle in #45b274 with rows of chevrons in #2f9a60 pointing the way it pushes (drifting in "play")
+    for (let si = 0; si < h.slopes.length; si++) {
+      const s = h.slopes[si];
+      const rx = s[0], ry = s[1], rw = s[2], rh = s[3], dir = s[4];
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(rx, ry, rw, rh);
+      ctx.fillStyle = "#45b274";
+      ctx.fill();
+      ctx.clip();
+      ctx.strokeStyle = "#2f9a60";
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      const stepX = 32;
+      const stepY = 26;
+      let driftX = 0;
+      let driftY = 0;
+      if (isPlayingScreen) {
+        if (dir === "right") driftX = (animT * 24) % stepX;
+        else if (dir === "left") driftX = -((animT * 24) % stepX);
+        else if (dir === "down") driftY = (animT * 20) % stepY;
+        else if (dir === "up") driftY = -((animT * 20) % stepY);
+      }
+      for (let cy = ry + 13 - stepY; cy <= ry + rh + stepY; cy += stepY) {
+        for (let cx = rx + 16 - stepX; cx <= rx + rw + stepX; cx += stepX) {
+          const px = cx + driftX;
+          const py = cy + driftY;
+          if (px < rx + 6 || px > rx + rw - 6 || py < ry + 6 || py > ry + rh - 6) continue;
+          ctx.beginPath();
+          if (dir === "right") {
+            ctx.moveTo(px - 5, py - 6);
+            ctx.lineTo(px + 5, py);
+            ctx.lineTo(px - 5, py + 6);
+          } else if (dir === "left") {
+            ctx.moveTo(px + 5, py - 6);
+            ctx.lineTo(px - 5, py);
+            ctx.lineTo(px + 5, py + 6);
+          } else if (dir === "down") {
+            ctx.moveTo(px - 6, py - 5);
+            ctx.lineTo(px, py + 5);
+            ctx.lineTo(px + 6, py - 5);
+          } else if (dir === "up") {
+            ctx.moveTo(px - 6, py + 5);
+            ctx.lineTo(px, py - 5);
+            ctx.lineTo(px + 6, py + 5);
+          }
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+
+    // Sand: rectangle with corners rounded by 12 in #f2d58a with small dots in #dcb964
+    for (let si = 0; si < h.sand.length; si++) {
+      const s = h.sand[si];
+      const rx = s[0], ry = s[1], rw = s[2], rh = s[3];
+      ctx.save();
+      traceRoundedRect(rx, ry, rw, rh, 12);
+      ctx.fillStyle = "#f2d58a";
+      ctx.fill();
+      ctx.clip();
+      ctx.fillStyle = "#dcb964";
+      let rCount = 0;
+      for (let dy = ry + 10; dy < ry + rh - 6; dy += 14) {
+        const xOff = (rCount % 2 === 1) ? 8 : 0;
+        for (let dx = rx + 10 + xOff; dx < rx + rw - 6; dx += 16) {
+          ctx.beginPath();
+          ctx.arc(dx, dy, 1.8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        rCount++;
+      }
+      ctx.restore();
+    }
+
+    // Water: rectangle with corners rounded by 12 in #3fa9f5 with short wave lines in #9bd6ff (swaying in "play")
+    for (let wi = 0; wi < h.water.length; wi++) {
+      const w = h.water[wi];
+      const rx = w[0], ry = w[1], rw = w[2], rh = w[3];
+      ctx.save();
+      traceRoundedRect(rx, ry, rw, rh, 12);
+      ctx.fillStyle = "#3fa9f5";
+      ctx.fill();
+      ctx.clip();
+      ctx.strokeStyle = "#9bd6ff";
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      let wRow = 0;
+      for (let wy = ry + 14; wy < ry + rh - 8; wy += 18) {
+        const xOff = (wRow % 2 === 1) ? 16 : 0;
+        let wCol = 0;
+        for (let wx = rx + 16 + xOff; wx < rx + rw - 12; wx += 32) {
+          const swayX = isPlayingScreen ? Math.sin(animT * 3.2 + wRow * 1.3 + wCol * 0.9) * 3.2 : 0;
+          const swayY = isPlayingScreen ? Math.cos(animT * 2.6 + wRow * 0.8 + wCol * 1.1) * 1.1 : 0;
+          const cx = wx + swayX;
+          const cy = wy + swayY;
+          ctx.beginPath();
+          ctx.moveTo(cx - 7, cy);
+          ctx.quadraticCurveTo(cx - 3.5, cy - 3, cx, cy);
+          ctx.quadraticCurveTo(cx + 3.5, cy + 3, cx + 7, cy);
+          ctx.stroke();
+          wCol++;
+        }
+        wRow++;
+      }
+      ctx.restore();
+    }
+
+    // 5. Tee mat: a square of 30 with rounded corners in #3a9e68, centred on the tee
+    traceRoundedRect(h.tee[0] - 15, h.tee[1] - 15, 30, 30, 6);
+    ctx.fillStyle = "#3a9e68";
+    ctx.fill();
+
+    // 6. Tunnel
+    if (h.tunnel) {
+      const inX = h.tunnel[0], inY = h.tunnel[1];
+      const outX = h.tunnel[2], outY = h.tunnel[3];
+      const dir = h.tunnel[4];
+
+      // Way in: disc of radius 14 in #2a1f57 ringed 4 wide in #9a7bff
+      ctx.beginPath();
+      ctx.arc(inX, inY, 14, 0, Math.PI * 2);
+      ctx.fillStyle = "#2a1f57";
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#9a7bff";
+      ctx.stroke();
+
+      // Way out: ring of same size and colour round a disc of radius 9 in #2a1f57, with a small arrowhead beside it
+      ctx.beginPath();
+      ctx.arc(outX, outY, 9, 0, Math.PI * 2);
+      ctx.fillStyle = "#2a1f57";
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(outX, outY, 14, 0, Math.PI * 2);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#9a7bff";
+      ctx.stroke();
+
+      const adx = dir === "right" ? 1 : dir === "left" ? -1 : 0;
+      const ady = dir === "down" ? 1 : dir === "up" ? -1 : 0;
+      const px = -ady;
+      const py = adx;
+      const tipX = outX + adx * 27;
+      const tipY = outY + ady * 27;
+      const baseX = outX + adx * 20;
+      const baseY = outY + ady * 20;
+      ctx.beginPath();
+      ctx.moveTo(tipX, tipY);
+      ctx.lineTo(baseX + px * 5, baseY + py * 5);
+      ctx.lineTo(baseX - px * 5, baseY - py * 5);
+      ctx.closePath();
+      ctx.fillStyle = "#9a7bff";
+      ctx.fill();
+    }
+
+    // 7. The cup: disc of radius 15 in #0d1a14 with a thin ring in #2f8a5a
+    ctx.beginPath();
+    ctx.arc(h.cup[0], h.cup[1], 15, 0, Math.PI * 2);
+    ctx.fillStyle = "#0d1a14";
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#2f8a5a";
+    ctx.stroke();
+
+    // 8. Every wall as a line 10 wide with round ends and joins in #fff1d0, over a copy in #cdb98c moved 3 down the screen
+    ctx.lineWidth = 10;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    // Shadow copy moved 3 down the screen
+    ctx.strokeStyle = "#cdb98c";
+    for (let gi = 0; gi < h.greens.length; gi++) {
+      tracePolygon(h.greens[gi], 3 * scrDownX, 3 * scrDownY);
+      ctx.stroke();
+    }
+    for (let wi = 0; wi < h.walls.length; wi++) {
+      const w = h.walls[wi];
+      ctx.beginPath();
+      ctx.moveTo(w[0] + 3 * scrDownX, w[1] + 3 * scrDownY);
+      ctx.lineTo(w[2] + 3 * scrDownX, w[3] + 3 * scrDownY);
+      ctx.stroke();
+    }
+
+    // Main wall lines
+    ctx.strokeStyle = "#fff1d0";
+    for (let gi = 0; gi < h.greens.length; gi++) {
+      tracePolygon(h.greens[gi], 0, 0);
+      ctx.stroke();
+    }
+    for (let wi = 0; wi < h.walls.length; wi++) {
+      const w = h.walls[wi];
+      ctx.beginPath();
+      ctx.moveTo(w[0], w[1]);
+      ctx.lineTo(w[2], w[3]);
+      ctx.stroke();
+    }
+
+    // 9. Each gate: while shut a line 10 wide in #ff6b5e with short cream dashes along it; while open only a stub 6 long at each end
+    for (let gi = 0; gi < h.gates.length; gi++) {
+      const g = h.gates[gi];
+      const ax = g[0], ay = g[1], bx = g[2], by = g[3];
+      if (gatesShut) {
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, by);
+        ctx.lineWidth = 10;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#ff6b5e";
+        ctx.stroke();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, by);
+        ctx.lineWidth = 3.5;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#fff1d0";
+        ctx.setLineDash([7, 9]);
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        const dx = bx - ax;
+        const dy = by - ay;
+        const len = Math.sqrt(dx * dx + dy * dy) || 1;
+        const ux = dx / len;
+        const uy = dy / len;
+        ctx.lineWidth = 10;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#ff6b5e";
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(ax + ux * 6, ay + uy * 6);
+        ctx.moveTo(bx, by);
+        ctx.lineTo(bx - ux * 6, by - uy * 6);
+        ctx.stroke();
+      }
+    }
+
+    // 10. Each post: disc of radius 14 in #ff6b5e with a darker ring (#d94f44) inside its edge,
+    // a small light spot (#ffc2bb) up and to the left of its centre and a soft shadow down the screen
+    for (let pi = 0; pi < h.posts.length; pi++) {
+      const p = h.posts[pi];
+      const px = p[0], py = p[1];
+      let swell = 1;
+      if (isPlayingScreen && postSwellSteps[pi] > 0) {
+        swell = 1 + 0.24 * Math.sin((postSwellSteps[pi] / 22) * Math.PI);
+      }
+
+      // Soft shadow down the screen
+      ctx.beginPath();
+      ctx.arc(px + 4 * scrDownX, py + 4 * scrDownY, 14 * swell, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(11, 18, 38, 0.42)";
+      ctx.fill();
+
+      // Main disc
+      ctx.beginPath();
+      ctx.arc(px, py, 14 * swell, 0, Math.PI * 2);
+      ctx.fillStyle = "#ff6b5e";
+      ctx.fill();
+
+      // Darker ring inside its edge
+      ctx.beginPath();
+      ctx.arc(px, py, 11.5 * swell, 0, Math.PI * 2);
+      ctx.lineWidth = 2.5 * swell;
+      ctx.strokeStyle = "#d94f44";
+      ctx.stroke();
+
+      // Small light spot up and to the left of its centre
+      ctx.beginPath();
+      ctx.arc(
+        px - 4.2 * swell * scrRightX - 4.2 * swell * scrDownX,
+        py - 4.2 * swell * scrRightY - 4.2 * swell * scrDownY,
+        3.2 * swell,
+        0,
+        Math.PI * 2
+      );
+      ctx.fillStyle = "#ffc2bb";
+      ctx.fill();
+    }
+
+    // Effects: widening rings (stroke, water, tunnel) while screen is "play"
+    if (isPlayingScreen && fxRings.length > 0) {
+      for (let i = 0; i < fxRings.length; i++) {
+        const rng = fxRings[i];
+        if (rng.age < 0) continue;
+        const prog = Math.min(1, rng.age / rng.maxLife);
+        const rad = rng.r0 + (rng.r1 - rng.r0) * prog;
+        const alpha = Math.max(0, 1 - prog);
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.beginPath();
+        ctx.arc(rng.x, rng.y, rad, 0, Math.PI * 2);
+        ctx.lineWidth = rng.width * (1 - 0.4 * prog);
+        ctx.strokeStyle = rng.color;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // 11. The flag: pole 3 wide in #fff1d0 standing on the cup's centre and rising 40 up the screen,
+    // with a small pennant in #ff6b5e at its top. When the ball is holed the flag lifts out of the cup.
+    const upX = -scrDownX;
+    const upY = -scrDownY;
+    let flagLift = 0;
+    if (activeState.result === "holed") {
+      const prog = activeState.phase === "done" ? 1 : Math.min(1, (90 - activeState.count) / 30);
+      flagLift = prog * 18;
+    }
+    const baseX = h.cup[0] + flagLift * upX;
+    const baseY = h.cup[1] + flagLift * upY;
+    const topX = baseX + 40 * upX;
+    const topY = baseY + 40 * upY;
+
+    ctx.beginPath();
+    ctx.moveTo(baseX, baseY);
+    ctx.lineTo(topX, topY);
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#fff1d0";
+    ctx.stroke();
+
+    const flutterUp = isPlayingScreen ? Math.sin(animT * 9.5) * 2.2 : 0;
+    const flutterRight = isPlayingScreen ? (16 + Math.cos(animT * 11) * 1.4) : 16;
+    const tipX = topX + flutterRight * scrRightX + (-6 + flutterUp) * upX;
+    const tipY = topY + flutterRight * scrRightY + (-6 + flutterUp) * upY;
+
+    ctx.beginPath();
+    ctx.moveTo(topX, topY);
+    if (isPlayingScreen) {
+      const midWave = Math.cos(animT * 9.5) * 1.8;
+      const ctrl1X = topX + 8 * scrRightX + (-2 + midWave) * upX;
+      const ctrl1Y = topY + 8 * scrRightY + (-2 + midWave) * upY;
+      const ctrl2X = topX + 8 * scrRightX + (-10 + midWave) * upX;
+      const ctrl2Y = topY + 8 * scrRightY + (-10 + midWave) * upY;
+      ctx.quadraticCurveTo(ctrl1X, ctrl1Y, tipX, tipY);
+      ctx.quadraticCurveTo(ctrl2X, ctrl2Y, topX - 12 * upX, topY - 12 * upY);
+    } else {
+      ctx.lineTo(tipX, tipY);
+      ctx.lineTo(topX - 12 * upX, topY - 12 * upY);
+    }
+    ctx.closePath();
+    ctx.fillStyle = "#ff6b5e";
+    ctx.fill();
+
+    // 12. While screen is "play" and phase is rest, the aim: nine white dots in a line from the ball along the aim's angle,
+    // the last one 30 + 150 power from the ball's centre and larger than the others, the nearer ones fainter.
+    if (isPlayingScreen && activeState.phase === "rest") {
+      const rad = activeState.aim.angle * Math.PI / 180;
+      const cosA = Math.cos(rad);
+      const sinA = Math.sin(rad);
+      const maxDist = 30 + 150 * activeState.aim.power;
+      for (let i = 1; i <= 9; i++) {
+        const d = (i / 9) * maxDist;
+        const dx = activeState.ball.x + cosA * d;
+        const dy = activeState.ball.y + sinA * d;
+        const r = i === 9 ? 4.5 : 2.5;
+        const alpha = 0.22 + 0.78 * (i / 9);
+        ctx.beginPath();
+        ctx.arc(dx, dy, r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, " + alpha.toFixed(3) + ")";
+        ctx.fill();
+      }
+    }
+
+    // 13. The ball: white disc (#ffffff) of radius 9 with a thin grey edge and a soft shadow.
+    // Not drawn in splash, tunnel and done; when holed it shrinks into the cup over 30 steps.
+    const ph = activeState.phase;
+    if (ph !== "splash" && ph !== "tunnel" && ph !== "done") {
+      let ballScale = 1;
+      if (ph === "end" && activeState.result === "holed") {
+        const elapsed = 90 - activeState.count;
+        ballScale = Math.max(0, 1 - elapsed / 30);
+      }
+      if (ballScale > 0) {
+        const r = 9 * ballScale;
+        const bx = activeState.ball.x;
+        const by = activeState.ball.y;
+
+        ctx.beginPath();
+        ctx.arc(bx + 2.5 * scrDownX, by + 2.5 * scrDownY, r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(11, 18, 38, 0.38)";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(bx, by, r, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = "#b8c2d1";
+        ctx.stroke();
+      }
+    }
+
+    // Effects: particles (sparks, sand grains, water drops, gold sparks, confetti) while screen is "play"
+    if (isPlayingScreen && fxParticles.length > 0) {
+      for (let i = 0; i < fxParticles.length; i++) {
+        const pt = fxParticles[i];
+        const prog = Math.min(1, pt.age / pt.maxLife);
+        const alpha = Math.max(0, 1 - prog * prog);
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = pt.color;
+        if (pt.confetti) {
+          ctx.translate(pt.x, pt.y);
+          ctx.rotate(pt.rot);
+          ctx.fillRect(-pt.r, -pt.r * 0.55, pt.r * 2, pt.r * 1.1);
+        } else {
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pt.r * (1 - 0.35 * prog), 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
+    ctx.restore();
+  }
+
+  // Controls: Pointer events on canvas
+  function updateDragAim(clientX, clientY) {
+    const dx = dragDownX - clientX;
+    const dy = dragDownY - clientY;
+    const L = Math.sqrt(dx * dx + dy * dy);
+    if (L >= 12) {
+      const fx = orient === "portrait" ? -dy : dx;
+      const fy = orient === "portrait" ? dx : dy;
+      curHole.aim.angle = Math.atan2(fy, fx) * 180 / Math.PI;
+      curHole.aim.power = Math.max(0.05, Math.min(1, L / 150));
+    } else {
+      curHole.aim.angle = dragSavedAngle;
+      curHole.aim.power = dragSavedPower;
+    }
+    return L;
+  }
+
+  window.addEventListener("pointerdown", function () {
+    ensureAudio();
+  }, true);
+
+  canvas.addEventListener("pointerdown", function (ev) {
+    ensureAudio();
+    if (ev.button !== undefined && ev.button !== 0) return;
+    if (curScreen !== "play" || isPaused || curHole.phase !== "rest") return;
+    dragging = true;
+    dragDownX = ev.clientX;
+    dragDownY = ev.clientY;
+    dragPointerId = ev.pointerId;
+    dragSavedAngle = curHole.aim.angle;
+    dragSavedPower = curHole.aim.power;
+    try {
+      canvas.setPointerCapture(ev.pointerId);
+    } catch (e) {
+      // ignore
+    }
+  });
+
+  window.addEventListener("pointermove", function (ev) {
+    if (!dragging) return;
+    if (dragPointerId !== null && ev.pointerId !== undefined && ev.pointerId !== dragPointerId) return;
+    if (curScreen !== "play" || isPaused || curHole.phase !== "rest") {
+      clearInputStates();
+      return;
+    }
+    updateDragAim(ev.clientX, ev.clientY);
+  });
+
+  window.addEventListener("pointerup", function (ev) {
+    if (!dragging) return;
+    if (dragPointerId !== null && ev.pointerId !== undefined && ev.pointerId !== dragPointerId) return;
+    if (curScreen !== "play" || isPaused || curHole.phase !== "rest") {
+      clearInputStates();
+      return;
+    }
+    const L = updateDragAim(ev.clientX, ev.clientY);
+    dragging = false;
+    dragPointerId = null;
+    if (L >= 12) {
+      shootOnHole(curHole, curHole.aim.angle, curHole.aim.power, false);
+      refreshHudAndOverlays();
+    } else {
+      curHole.aim.angle = dragSavedAngle;
+      curHole.aim.power = dragSavedPower;
+    }
+  });
+
+  window.addEventListener("pointercancel", function (ev) {
+    if (!dragging) return;
+    if (dragPointerId !== null && ev.pointerId !== undefined && ev.pointerId !== dragPointerId) return;
+    curHole.aim.angle = dragSavedAngle;
+    curHole.aim.power = dragSavedPower;
+    dragging = false;
+    dragPointerId = null;
+  });
+
+  // Controls: Keyboard
+  function toggleSound(newVal) {
+    soundOn = typeof newVal === "boolean" ? newVal : !soundOn;
+    syncSoundBoxes();
+    writeSoundPref(soundOn);
+    updateMasterGain();
+  }
+
+  window.addEventListener("keydown", function (ev) {
+    ensureAudio();
+    const key = ev.key;
+    if (key === "ArrowLeft" || key === "ArrowRight" || key === "ArrowUp" || key === "ArrowDown" || key === " ") {
+      ev.preventDefault();
+    }
+    if (ev.repeat) return;
+
+    if (key === "m" || key === "M") {
+      toggleSound();
+      return;
+    }
+
+    if (key === "p" || key === "P" || key === "Escape") {
+      if (curScreen === "play") {
+        if (isPaused) resumeGame();
+        else pauseGame();
+      }
+      return;
+    }
+
+    if (key === " " || key === "Enter") {
+      ev.preventDefault();
+      if (curScreen === "title") {
+        sndButton();
+        startFullRound();
+      } else if (curScreen === "play") {
+        if (isPaused) {
+          resumeGame();
+          sndButton();
+        } else if (curHole.phase === "rest") {
+          clearInputStates();
+          shootOnHole(curHole, curHole.aim.angle, curHole.aim.power, false);
+          refreshHudAndOverlays();
+        }
+      } else if (curScreen === "hole") {
+        sndButton();
+        nextFromHoleCard();
+      } else if (curScreen === "round") {
+        sndButton();
+        startFullRound();
+      }
+      return;
+    }
+
+    if (key === "ArrowLeft" || key === "ArrowRight" || key === "ArrowUp" || key === "ArrowDown") {
+      heldKeys[key] = 0;
+      if (curScreen === "play" && !isPaused && curHole.phase === "rest") {
+        if (key === "ArrowLeft") curHole.aim.angle -= 1;
+        else if (key === "ArrowRight") curHole.aim.angle += 1;
+        else if (key === "ArrowUp") curHole.aim.power = Math.max(0.05, Math.min(1, curHole.aim.power + 0.02));
+        else if (key === "ArrowDown") curHole.aim.power = Math.max(0.05, Math.min(1, curHole.aim.power - 0.02));
+      }
+    }
+  });
+
+  window.addEventListener("keyup", function (ev) {
+    delete heldKeys[ev.key];
+  });
+
+  window.addEventListener("blur", function () {
+    for (const k in heldKeys) {
+      delete heldKeys[k];
+    }
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden && curScreen === "play" && !isPaused) {
+      pauseGame();
+    }
+  });
+
+  window.addEventListener("resize", function () {
+    updateLayout();
+    drawScene();
+  });
+
+  // UI Button & Checkbox bindings (all blur on click and play button sound)
+  function bindButton(btn, fn, isPauseAction) {
+    btn.addEventListener("click", function () {
+      btn.blur();
+      ensureAudio();
+      if (!isPauseAction) {
+        resumeAudio();
+        sndButton();
+      } else {
+        sndButton();
+      }
+      fn();
+    });
+  }
+
+  bindButton(playBtn, function () { startFullRound(); }, false);
+  for (let i = 0; i < 9; i++) {
+    (function (holeNum) {
+      bindButton(holeBtns[holeNum - 1], function () {
+        startPracticeRound(holeNum);
+      }, false);
+    })(i + 1);
+  }
+  bindButton(pauseBtn, function () {
+    if (curScreen === "play" && !isPaused) pauseGame();
+  }, true);
+  bindButton(resumeBtn, function () { resumeGame(); }, false);
+  bindButton(restartBtn, function () {
+    if (isPractice) startPracticeRound(roundStartHole);
+    else startFullRound();
+  }, false);
+  bindButton(menuBtn, function () { showMenu(); }, false);
+  bindButton(nextBtn, function () { nextFromHoleCard(); }, false);
+  bindButton(againBtn, function () { startFullRound(); }, false);
+  bindButton(roundMenuBtn, function () { showMenu(); }, false);
+
+  soundBox1.addEventListener("click", function () { ensureAudio(); soundBox1.blur(); });
+  soundBox2.addEventListener("click", function () { ensureAudio(); soundBox2.blur(); });
+  soundBox1.addEventListener("change", function () { toggleSound(soundBox1.checked); });
+  soundBox2.addEventListener("change", function () { toggleSound(soundBox2.checked); });
+
+  // Frame loop
+  let frozen = false;
+  let lastRafTime = null;
+  let accumulator = 0;
+
+  function rafLoop(now) {
+    if (lastRafTime === null) lastRafTime = now;
+    let frameDt = (now - lastRafTime) / 1000;
+    lastRafTime = now;
+    if (frameDt < 0) frameDt = 0;
+    if (frameDt > 0.1) frameDt = 0.1;
+
+    sampleAnalyser();
+
+    if (!frozen) {
+      accumulator += frameDt;
+      while (accumulator >= DT) {
+        accumulator -= DT;
+        tickOneStep();
+      }
+    }
+    drawScene();
+    window.requestAnimationFrame(rafLoop);
+  }
+
+  // Hooks on window.game
+  function getState() {
+    const onTitle = curScreen === "title";
+    const h = curHole.def;
+    const tots = computeTotals();
+    let gateState = null;
+    if (!onTitle && h.gates.length > 0) {
+      gateState = Math.floor(curHole.clock / 180) % 2 === 0 ? "shut" : "open";
+    }
+    return {
+      screen: curScreen,
+      paused: isPaused,
+      practice: isPractice,
+      hole: onTitle ? 0 : h.num,
+      name: onTitle ? "" : h.name,
+      par: onTitle ? 0 : h.par,
+      strokes: onTitle ? 0 : curHole.strokes,
+      clock: onTitle ? demoClock : curHole.clock,
+      phase: onTitle ? demoState.phase : curHole.phase,
+      result: onTitle ? null : curHole.result,
+      ball: onTitle ? null : {
+        x: curHole.ball.x,
+        y: curHole.ball.y,
+        vx: curHole.ball.vx,
+        vy: curHole.ball.vy
+      },
+      aim: onTitle ? null : {
+        angle: curHole.aim.angle,
+        power: curHole.aim.power
+      },
+      gate: gateState,
+      scores: roundScores.slice(),
+      total: tots.total,
+      totalPar: tots.totalPar,
+      callout: curScreen === "play" ? curHole.calloutText : null,
+      last: lastFinished ? {
+        hole: lastFinished.hole,
+        strokes: lastFinished.strokes,
+        par: lastFinished.par,
+        name: lastFinished.name,
+        picked: lastFinished.picked,
+        practice: lastFinished.practice
+      } : null,
+      demo: onTitle ? {
+        x: demoState.ball.x,
+        y: demoState.ball.y,
+        phase: demoState.phase
+      } : null,
+      orient: orient,
+      scale: fieldScale,
+      touch: isTouch,
+      dragging: dragging,
+      save: {
+        best: saveRecord.best,
+        holes: saveRecord.holes.slice()
+      }
+    };
+  }
+
+  window.game = {
+    state: getState,
+    start: function () {
+      startFullRound();
+      drawScene();
+    },
+    practice: function (n) {
+      startPracticeRound(n);
+      drawScene();
+    },
+    menu: function () {
+      showMenu();
+      drawScene();
+    },
+    next: function () {
+      nextFromHoleCard();
+      drawScene();
+    },
+    pause: function () {
+      pauseGame();
+      drawScene();
+    },
+    resume: function () {
+      resumeGame();
+      drawScene();
+    },
+    freeze: function (on) {
+      frozen = !!on;
+      accumulator = 0;
+      lastRafTime = null;
+    },
+    advance: function (steps) {
+      const count = Math.max(0, Math.floor(Number(steps) || 0));
+      const startScr = curScreen;
+      for (let i = 0; i < count; i++) {
+        if (isPaused || (curScreen !== "play" && curScreen !== "title")) break;
+        tickOneStep();
+        if (isPaused || curScreen !== startScr) break;
+      }
+      sampleAnalyser();
+      drawScene();
+      return getState();
+    },
+    aim: function (angle, power) {
+      if (curScreen === "play" && curHole) {
+        if (angle !== undefined) curHole.aim.angle = Number(angle);
+        if (power !== undefined) curHole.aim.power = Math.max(0.05, Math.min(1, Number(power)));
+        drawScene();
+      }
+    },
+    shoot: function (angle, power) {
+      if (curScreen !== "play" || isPaused || !curHole || curHole.phase !== "rest") {
+        return false;
+      }
+      const a = angle !== undefined ? Number(angle) : curHole.aim.angle;
+      const p = power !== undefined ? Number(power) : curHole.aim.power;
+      clearInputStates();
+      const ok = shootOnHole(curHole, a, p, false);
+      if (ok) {
+        refreshHudAndOverlays();
+        drawScene();
+      }
+      return ok;
+    },
+    course: function () {
+      return courseData.map(function (h) {
+        return {
+          name: h.name,
+          par: h.par,
+          tee: h.tee.slice(),
+          cup: h.cup.slice(),
+          greens: h.greens.map(function (g) { return g.slice(); }),
+          walls: h.walls.map(function (w) { return w.slice(); }),
+          posts: h.posts.map(function (p) { return p.slice(); }),
+          sand: h.sand.map(function (s) { return s.slice(); }),
+          water: h.water.map(function (w) { return w.slice(); }),
+          slopes: h.slopes.map(function (s) { return s.slice(); }),
+          gates: h.gates.map(function (g) { return g.slice(); }),
+          tunnel: h.tunnel ? h.tunnel.slice() : null
+        };
+      });
+    },
+    screenOf: screenOf,
+    toField: toField,
+    sound: function () {
+      return {
+        on: soundOn,
+        state: audioCtx ? audioCtx.state : "none"
+      };
+    },
+    audioPeak: function () {
+      sampleAnalyser();
+      const peak = maxPeakAmp;
+      maxPeakAmp = 0;
+      if (peak <= 1e-6) return -120;
+      const db = 20 * Math.log10(peak);
+      return db < -120 ? -120 : db;
+    },
+    fx: function () {
+      if (curScreen !== "play") {
+        return { particles: 0, rings: 0 };
+      }
+      return {
+        particles: fxParticles.length,
+        rings: fxRings.length
+      };
+    }
+  };
+
+  // Boot
+  updateLayout();
+  refreshTitleUI();
+
+  let startHoleParam = null;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const hVal = params.get("hole");
+    if (hVal && /^[1-9]$/.test(hVal.trim())) {
+      startHoleParam = Number(hVal.trim());
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  if (startHoleParam !== null) {
+    startPracticeRound(startHoleParam);
+  } else {
+    showMenu();
+  }
+
+  drawScene();
+  window.requestAnimationFrame(rafLoop);
+})();
+</script>
+</body>
+</html>
