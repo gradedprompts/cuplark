@@ -2,7 +2,7 @@
 
 Nine holes of mini golf seen from above, in one HTML file, built by a single prompt in Google Antigravity (Gemini 4 Argon, high effort).
 
-Play it: https://gradedprompts.github.io/cuplark/
+Play it: https://games.gradedprompts.com/cuplark/
 
 `index.html` is the unedited output of one run of the prompt. Nothing was changed by hand after the run.
 SHA-256: `5a67eaf2d64669113cd864cd07775acc865428eeb3ec0b8c1556c8f4c1ed0e7b`
